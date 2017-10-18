@@ -97,6 +97,22 @@
             <output id="biquadGainO">25</output>
         </div>
     </div>
+    <div class ="row">
+        <div class="col s10">
+            <label id="saveData"></label>
+        </div>
+        <div class="col s2">
+            <input id="save" type="button" value="Save" />
+        </div>
+    </div>
+    <div class ="row">
+        <div class="col s10">
+            <input id="loadData" type="text" class="validate">
+        </div>
+        <div class="col s2">
+            <input id="load" type="button" value="Load" />
+        </div>
+    </div>
 
 </div>
 <script>
@@ -146,6 +162,23 @@
 
         player = document.getElementById('player');
         document.getElementById('files').addEventListener('change', handleFileSelect, false);
+        document.getElementById('save').onclick = function () {
+            data = "";
+            for (i=0;i<$("[type=range]").length;i++)
+            {
+                data += $("[type=range]")[i].value + ';'
+            }
+            $("#saveData")[0].textContent=data
+        };
+        document.getElementById('load').onclick = function () {
+            data = $("#loadData")[0].value.split(";")
+            for (i=0;i<$("[type=range]").length;i++)
+            {
+                $("[type=range]")[i].value = data[i];
+            }
+            $("#saveData")[0].textContent=data
+        };
+
         document.getElementById('stop').onclick = function () {
             source.stop();
         };
