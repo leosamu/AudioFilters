@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Audio filter test</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/js/materialize.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/css/materialize.min.css">
+    <script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <input id="files" type="file" id="files" name="files[]" multiple />
+
+        <input id="play" type="button" value="play" />
+        <input id="stop" type="button" value="stop" />
+    </div>
+    <div class="row">
+        <div class="col s12">
+            <input id="compressor" type="button" data-active="false" value="Add compression"/>
+        </div>
+
+        <div class="col s2">
+        Threshold
+        </div>
+        <div class="col s9">
+            <input type="range" min="-100" max="0" value="0" id="compressorThreshold" mods="compressor" att="threshold" oninput="compressorThresholdO.value = compressorThreshold.value">
+        </div>
+        <div class="col s1">
+            <output id="compressorThresholdO">0</output>
+        </div>
+        <div class="col s2">
+        Knee
+        </div>
+        <div class="col s9">
+            <input type="range" min="0" max="40" value="40" id="compressorKnee" mods="compressor" att="knee" oninput="compressorKneeO.value = compressorKnee.value">
+        </div>
+        <div class="col s1">
+            <output id="compressorKneeO">40</output>
+        </div>
+        <div class="col s2">
+        Ratio
+        </div>
+        <div class="col s9">
+            <input type="range" min="0" max="20" value="12" step ="0.1" id="compressorRatio" mods="compressor" att="ratio" oninput="compressorRatioO.value = compressorRatio.value">
+        </div>
+        <div class="col s1">
+            <output id="compressorRatioO">12</output>
+        </div>
+        <div class="col s2">
+        Attack
+        </div>
+        <div class="col s9">
+            <input type="range" min="0" max="1" value="0" step ="0.1" id="compressorAttack" mods="compressor" att="attack" oninput="compressorAttackO.value = compressorAttack.value">
+        </div>
+        <div class="col s1">
+            <output id="compressorAttackO">0</output>
+        </div>
+        <div class="col s2">
+        Release
+        </div>
+        <div class="col s9">
+            <input type="range" min="0" max="1" value="0.25" step ="0.1" id="compressorRelease" mods="compressor" att="release" oninput="compressorReleaseO.value = compressorRelease.value">
+        </div>
+        <div class="col s1">
+            <output id="compressorReleaseO">0.25</output>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12">
+            <input id="biquad" type="button" data-active="false" value="Add biquad filter"/>
+        </div>
+        <div class="col s2">
+        Frequency
+        </div>
+        <div class="col s9">
+            <input type="range" min="20" max="5000" value="1000" id="biquadFrequency" mods="biquadFilter" att="frequency" oninput="biquadFrequencyO.value = biquadFrequency.value">
+        </div>
+        <div class="col s1">
+            <output id="biquadFrequencyO">1000</output>
+        </div>
+        <div class="col s2">
+        Gain
+        </div>
+        <div class="col s9">
+            <input type="range" min="-40" max="40" value="25" id="biquadGain" mods="biquadFilter" att="gain" oninput="biquadGainO.value = biquadGain.value">
+        </div>
+        <div class="col s1">
+            <output id="biquadGainO">25</output>
+        </div>
+    </div>
+
+</div>
+<script>
+    $( document ).ready(function() {
+  // Handler for .ready() called.
+        window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        context = new window.AudioContext();
+        compressor = context.createDynamicsCompressor();
+        biquadFilter = context.createBiquadFilter();
+        source=null;
+        files=null;
+        function playSound(arraybuffer) {
+            context.decodeAudioData(arraybuffer, function (buf) {
+                source = context.createBufferSource();
+                /*create a compressor node*/
+                compressor.threshold.value = -50;
+                compressor.knee.value = 40;
+                compressor.ratio.value = 12;
+                compressor.attack.value = 0;
+                compressor.release.value = 0.25;
+                biquadFilter.type = "lowshelf";
+                biquadFilter.frequency.value = 1000;
+                biquadFilter.gain.value = 25;
+
+
+
+                source.connect(context.destination);
+                source.buffer = buf;
+                source.start(0);
+            });
+        }
+
+        function handleFileSelect(evt) {
+            files = evt.target.files; // FileList object
+            playFile();
+        }
+
+        function playFile() {
+            var freader = new FileReader();
+
+            freader.onload = function (e) {
+                console.log(e.target.result);
+                playSound(e.target.result);
+            };
+            freader.readAsArrayBuffer(files[0]);
+        }
+
+        player = document.getElementById('player');
+        document.getElementById('files').addEventListener('change', handleFileSelect, false);
+        document.getElementById('stop').onclick = function () {
+            source.stop();
+        };
+        document.getElementById('play').onclick = function () {
+            playFile();
+        };
+        document.getElementById('compressor').onclick = function () {
+              var active = this.getAttribute('data-active');
+              if(active == 'false') {
+                this.setAttribute('data-active', 'true');
+                this.value = 'Remove compression';
+
+                source.disconnect(context.destination);
+                source.connect(compressor);
+                compressor.connect(context.destination);
+              } else if(active == 'true') {
+                this.setAttribute('data-active', 'false');
+                this.value = 'Add compression';
+                source.disconnect(compressor);
+                compressor.disconnect(context.destination);
+                source.connect(context.destination);
+              }
+        }
+        $("input[mods=compressor]").bind("change", function(e){
+            compressor[$(this).attr('att')].value=Number($(this).val())
+        });
+         $("input[mods=biquadFilter]").bind("change", function(e){
+            biquadFilter[$(this).attr('att')].value=Number($(this).val())
+        });
+        document.getElementById('biquad').onclick = function () {
+              var active = this.getAttribute('data-active');
+              if(active == 'false') {
+                this.setAttribute('data-active', 'true');
+                this.value = 'Remove biquad filter';
+
+                source.disconnect(context.destination);
+                source.connect(biquadFilter);
+                biquadFilter.connect(context.destination);
+              } else if(active == 'true') {
+                this.setAttribute('data-active', 'false');
+                this.value = 'Add biquad filter';
+                source.disconnect(biquadFilter);
+                biquadFilter.disconnect(context.destination);
+                source.connect(context.destination);
+              }
+        }
+    });
+
+    </script>
+</body>
+</html>
