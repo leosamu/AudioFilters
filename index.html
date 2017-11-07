@@ -25,7 +25,7 @@
     </div>
     <div class="row">
         <div class="col s12">
-            <input id="compressor" type="button" data-active="false" value="Add compression"/>
+            Compressor
         </div>
 
         <div class="col s2">
@@ -76,7 +76,7 @@
     </div>
     <div class="row">
         <div class="col s12">
-            <input id="biquad" type="button" data-active="false" value="Add biquad filter"/>
+            Biquad filter
         </div>
         <div class="col s2">
         Frequency
@@ -98,35 +98,40 @@
         </div>
     </div>
     <div class ="row">
-        <div class="col s10">
-            <label id="saveData"></label>
+        <div class="col s8">
+            <input id="loadData" type="text" class="validate">
         </div>
         <div class="col s2">
             <input id="save" type="button" value="Save" />
-        </div>
-    </div>
-    <div class ="row">
-        <div class="col s10">
-            <input id="loadData" type="text" class="validate">
         </div>
         <div class="col s2">
             <input id="load" type="button" value="Load" />
         </div>
     </div>
+    <div class ="row">
+        <div class="col s12">
+            <audio controls=""></audio>
+        </div>
+    </div>
 
 </div>
 <script>
+
     $( document ).ready(function() {
   // Handler for .ready() called.
         window.AudioContext = window.AudioContext || window.webkitAudioContext;
         context = new window.AudioContext();
+        analyser = context.createAnalyser();
         compressor = context.createDynamicsCompressor();
         biquadFilter = context.createBiquadFilter();
         source=null;
         files=null;
         function playSound(arraybuffer) {
+            chunks=[]
             context.decodeAudioData(arraybuffer, function (buf) {
                 source = context.createBufferSource();
+                dest = context.createMediaStreamDestination()
+                mediaRecorder = new MediaRecorder(dest.stream);
                 /*create a compressor node*/
                 compressor.threshold.value = -50;
                 compressor.knee.value = 40;
@@ -138,16 +143,30 @@
                 biquadFilter.gain.value = 25;
 
 
+                source.connect(analyser);
 
-                source.connect(context.destination);
+                mediaRecorder.ondataavailable = function(evt) {
+                   // push each chunk (blobs) in an array
+                   chunks.push(evt.data);
+                 };
+                source.onended = function(){
+                    var blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' });
+                    document.querySelector("audio").src = URL.createObjectURL(blob);
+                }
+
+                source.connect(compressor);
+                compressor.connect(biquadFilter)
+                biquadFilter.connect(dest);
+                biquadFilter.connect(context.destination);
                 source.buffer = buf;
+                mediaRecorder.start();
                 source.start(0);
             });
         }
 
         function handleFileSelect(evt) {
             files = evt.target.files; // FileList object
-            playFile();
+            //playFile();
         }
 
         function playFile() {
@@ -168,7 +187,7 @@
             {
                 data += $("[type=range]")[i].value + ';'
             }
-            $("#saveData")[0].textContent=data
+            $("#loadData")[0].value=data
         };
         document.getElementById('load').onclick = function () {
             data = $("#loadData")[0].value.split(";")
@@ -176,55 +195,26 @@
             {
                 $("[type=range]")[i].value = data[i];
             }
-            $("#saveData")[0].textContent=data
+            $("#loadData")[0].value=data
         };
 
         document.getElementById('stop').onclick = function () {
+            mediaRecorder.stop()
             source.stop();
         };
         document.getElementById('play').onclick = function () {
             playFile();
         };
-        document.getElementById('compressor').onclick = function () {
-              var active = this.getAttribute('data-active');
-              if(active == 'false') {
-                this.setAttribute('data-active', 'true');
-                this.value = 'Remove compression';
 
-                source.disconnect(context.destination);
-                source.connect(compressor);
-                compressor.connect(context.destination);
-              } else if(active == 'true') {
-                this.setAttribute('data-active', 'false');
-                this.value = 'Add compression';
-                source.disconnect(compressor);
-                compressor.disconnect(context.destination);
-                source.connect(context.destination);
-              }
-        }
         $("input[mods=compressor]").bind("change", function(e){
             compressor[$(this).attr('att')].value=Number($(this).val())
         });
          $("input[mods=biquadFilter]").bind("change", function(e){
             biquadFilter[$(this).attr('att')].value=Number($(this).val())
         });
-        document.getElementById('biquad').onclick = function () {
-              var active = this.getAttribute('data-active');
-              if(active == 'false') {
-                this.setAttribute('data-active', 'true');
-                this.value = 'Remove biquad filter';
 
-                source.disconnect(context.destination);
-                source.connect(biquadFilter);
-                biquadFilter.connect(context.destination);
-              } else if(active == 'true') {
-                this.setAttribute('data-active', 'false');
-                this.value = 'Add biquad filter';
-                source.disconnect(biquadFilter);
-                biquadFilter.disconnect(context.destination);
-                source.connect(context.destination);
-              }
-        }
+
+
     });
 
     </script>
