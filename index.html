@@ -20,12 +20,19 @@
 	border: black 1px solid;
 	margin-top: 70px;
 }
+canvas#meterout {
+	border: black 1px solid;
+	margin-top: 70px;
+}
 </style>
 <body>
     <div class="container">
         <div class="row">
-            <div class="col s2">
-                <canvas id="meter" width="100" height="400"></canvas>
+            <div class="col s1">
+                <canvas id="meter" width="50" height="400"></canvas>
+            </div>
+            <div class="col s1">
+                <canvas id="meterout" width="50" height="400"></canvas>
             </div>
             <div class="col s10">
         <div class="row">
@@ -133,21 +140,27 @@
 
     $( document ).ready(function() {
   // Handler for .ready() called.
-        //let draw the audio
+        //let draw the audioin
         var canvas = document.querySelector('#meter');
         var ctx = canvas.getContext('2d');
         var w = canvas.width;
         var h = canvas.height;
-
+        //let draw the audioout
+        var canvasout = document.querySelector('#meterout');
+        var ctxout = canvasout.getContext('2d');
         //fill the canvas first
         ctx.fillStyle = '#555';
         ctx.fillRect(0,0,w,h);
+        //fill the canvas first
+        ctxout.fillStyle = '#555';
+        ctxout.fillRect(0,0,w,h);
 
         window.AudioContext = window.AudioContext || window.webkitAudioContext;
         context = new window.AudioContext();
         //testing scriptprocessor instead of analyser
-        //analyser = context.createAnalyser();
+        //analyser = context.createAnalyser();        
         analyser = context.createScriptProcessor(1024,1,1);
+        analyserout = context.createScriptProcessor(1024,1,1);
         compressor = context.createDynamicsCompressor();
         biquadFilter = context.createBiquadFilter();
         source=null;
@@ -214,15 +227,50 @@
                     ctx.textAlign = "center";
                     ctx.fillText(Math.round(db*100)/100+' dB',w/2,h-h*0.025);
                 };
+
+                analyserout.onaudioprocess = function(e){
+                    var out = e.outputBuffer.getChannelData(0);
+                    var int = e.inputBuffer.getChannelData(0);
+                    var max = 0;
+                    
+                    for(var i = 0; i < int.length; i++){
+                        out[i] = 0;//prevent feedback and we only need the input data
+                        max = int[i] > max ? int[i] : max;
+                    }
+                    //convert from magitude to decibel
+                    
+                    var db = 20*Math.log10(Math.max(max,Math.pow(10,-72/20)));
+                    //db = -20;
+                    console.log(db);
+                    //It's time to draw on the canvas
+                    //create the gradient
+                    var grad = ctx.createLinearGradient(w/10,h*0.2,w/10,h*0.95);
+                    grad.addColorStop(0,'red');
+                    grad.addColorStop(-6/-72,'yellow');
+                    grad.addColorStop(1,'green');
+                    //fill the background
+                    ctxout.fillStyle = '#555';
+                    ctxout.fillRect(0,0,w,h);
+                    ctxout.fillStyle = grad;
+                    //draw the rectangle
+                    ctxout.fillRect(w/10,h*0.8*(db/-72),w*8/10,(h*0.95)-h*0.8*(db/-72));
+                    //draw the text out
+                    ctxout.fillStyle="white";
+                    ctxout.font = "Arial 12pt";
+                    ctxout.textAlign = "center";
+                    ctxout.fillText(Math.round(db*100)/100+' dB',w/2,h-h*0.025);
+                };
                 //$("#compressor")[0].getAttribute('data-active')=="true"
                 //$("#biquad")[0].getAttribute('data-active')=="true"
                 //source.connect(analyser);
                 
                 source.connect(compressor);
+                source.connect(analyser);
+                analyser.connect(compressor);
                 compressor.connect(biquadFilter);                
                 biquadFilter.connect(dest);
-                biquadFilter.connect(analyser);
-                analyser.connect(context.destination);
+                biquadFilter.connect(analyserout);
+                analyserout.connect(context.destination);
                 biquadFilter.connect(context.destination);
                 source.buffer = buf;
                 mediaRecorder.start();
