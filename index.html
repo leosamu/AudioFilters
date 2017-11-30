@@ -15,113 +15,139 @@
   integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
   crossorigin="anonymous"></script>
 </head>
+<style>
+    canvas#meter {
+	border: black 1px solid;
+	margin-top: 70px;
+}
+</style>
 <body>
-<div class="container">
-    <div class="row">
-        <input id="files" type="file" id="files" name="files[]" multiple />
-
-        <input id="play" type="button" value="play" />
-        <input id="stop" type="button" value="stop" />
+    <div class="container">
+        <div class="row">
+            <div class="col s2">
+                <canvas id="meter" width="100" height="400"></canvas>
+            </div>
+            <div class="col s10">
+        <div class="row">
+            <input id="files" type="file" name="files[]" multiple="">
+    
+            <input id="play" type="button" value="play">
+            <input id="stop" type="button" value="stop">
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <input id="compressor" type="button" data-active="false" value="Add compression">
+                Compressor
+            </div>
+    
+            <div class="col s2">
+            Threshold
+            </div>
+            <div class="col s9">
+                <input type="range" min="-100" max="0" value="0" id="compressorThreshold" mods="compressor" att="threshold" oninput="compressorThresholdO.value = compressorThreshold.value"><span class="thumb"><span class="value"></span></span>
+            </div>
+            <div class="col s1">
+                <output id="compressorThresholdO">0</output>
+            </div>
+            <div class="col s2">
+            Knee
+            </div>
+            <div class="col s9">
+                <input type="range" min="0" max="40" value="40" id="compressorKnee" mods="compressor" att="knee" oninput="compressorKneeO.value = compressorKnee.value"><span class="thumb"><span class="value"></span></span>
+            </div>
+            <div class="col s1">
+                <output id="compressorKneeO">40</output>
+            </div>
+            <div class="col s2">
+            Ratio
+            </div>
+            <div class="col s9">
+                <input type="range" min="0" max="20" value="12" step="0.1" id="compressorRatio" mods="compressor" att="ratio" oninput="compressorRatioO.value = compressorRatio.value"><span class="thumb"><span class="value"></span></span>
+            </div>
+            <div class="col s1">
+                <output id="compressorRatioO">12</output>
+            </div>
+            <div class="col s2">
+            Attack
+            </div>
+            <div class="col s9">
+                <input type="range" min="0" max="1" value="0" step="0.1" id="compressorAttack" mods="compressor" att="attack" oninput="compressorAttackO.value = compressorAttack.value"><span class="thumb"><span class="value"></span></span>
+            </div>
+            <div class="col s1">
+                <output id="compressorAttackO">0</output>
+            </div>
+            <div class="col s2">
+            Release
+            </div>
+            <div class="col s9">
+                <input type="range" min="0" max="1" value="0.25" step="0.1" id="compressorRelease" mods="compressor" att="release" oninput="compressorReleaseO.value = compressorRelease.value"><span class="thumb"><span class="value"></span></span>
+            </div>
+            <div class="col s1">
+                <output id="compressorReleaseO">0.25</output>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <input id="biquad" type="button" data-active="false" value="Add biquad filter">
+                Biquad filter
+            </div>
+            <div class="col s2">
+            Frequency
+            </div>
+            <div class="col s9">
+                <input type="range" min="20" max="5000" value="1000" id="biquadFrequency" mods="biquadFilter" att="frequency" oninput="biquadFrequencyO.value = biquadFrequency.value"><span class="thumb"><span class="value"></span></span>
+            </div>
+            <div class="col s1">
+                <output id="biquadFrequencyO">1000</output>
+            </div>
+            <div class="col s2">
+            Gain
+            </div>
+            <div class="col s9">
+                <input type="range" min="-40" max="40" value="25" id="biquadGain" mods="biquadFilter" att="gain" oninput="biquadGainO.value = biquadGain.value"><span class="thumb"><span class="value"></span></span>
+            </div>
+            <div class="col s1">
+                <output id="biquadGainO">25</output>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s8">
+                <input id="loadData" type="text" class="validate">
+            </div>
+            <div class="col s2">
+                <input id="save" type="button" value="Save">
+            </div>
+            <div class="col s2">
+                <input id="load" type="button" value="Load">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <audio controls=""></audio>
+            </div>
+        </div>
+            </div>
+        </div>
     </div>
-    <div class="row">
-        <div class="col s12">
-            Compressor
-        </div>
-
-        <div class="col s2">
-        Threshold
-        </div>
-        <div class="col s9">
-            <input type="range" min="-100" max="0" value="0" id="compressorThreshold" mods="compressor" att="threshold" oninput="compressorThresholdO.value = compressorThreshold.value">
-        </div>
-        <div class="col s1">
-            <output id="compressorThresholdO">0</output>
-        </div>
-        <div class="col s2">
-        Knee
-        </div>
-        <div class="col s9">
-            <input type="range" min="0" max="40" value="40" id="compressorKnee" mods="compressor" att="knee" oninput="compressorKneeO.value = compressorKnee.value">
-        </div>
-        <div class="col s1">
-            <output id="compressorKneeO">40</output>
-        </div>
-        <div class="col s2">
-        Ratio
-        </div>
-        <div class="col s9">
-            <input type="range" min="0" max="20" value="12" step ="0.1" id="compressorRatio" mods="compressor" att="ratio" oninput="compressorRatioO.value = compressorRatio.value">
-        </div>
-        <div class="col s1">
-            <output id="compressorRatioO">12</output>
-        </div>
-        <div class="col s2">
-        Attack
-        </div>
-        <div class="col s9">
-            <input type="range" min="0" max="1" value="0" step ="0.1" id="compressorAttack" mods="compressor" att="attack" oninput="compressorAttackO.value = compressorAttack.value">
-        </div>
-        <div class="col s1">
-            <output id="compressorAttackO">0</output>
-        </div>
-        <div class="col s2">
-        Release
-        </div>
-        <div class="col s9">
-            <input type="range" min="0" max="1" value="0.25" step ="0.1" id="compressorRelease" mods="compressor" att="release" oninput="compressorReleaseO.value = compressorRelease.value">
-        </div>
-        <div class="col s1">
-            <output id="compressorReleaseO">0.25</output>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col s12">
-            Biquad filter
-        </div>
-        <div class="col s2">
-        Frequency
-        </div>
-        <div class="col s9">
-            <input type="range" min="20" max="5000" value="1000" id="biquadFrequency" mods="biquadFilter" att="frequency" oninput="biquadFrequencyO.value = biquadFrequency.value">
-        </div>
-        <div class="col s1">
-            <output id="biquadFrequencyO">1000</output>
-        </div>
-        <div class="col s2">
-        Gain
-        </div>
-        <div class="col s9">
-            <input type="range" min="-40" max="40" value="25" id="biquadGain" mods="biquadFilter" att="gain" oninput="biquadGainO.value = biquadGain.value">
-        </div>
-        <div class="col s1">
-            <output id="biquadGainO">25</output>
-        </div>
-    </div>
-    <div class ="row">
-        <div class="col s8">
-            <input id="loadData" type="text" class="validate">
-        </div>
-        <div class="col s2">
-            <input id="save" type="button" value="Save" />
-        </div>
-        <div class="col s2">
-            <input id="load" type="button" value="Load" />
-        </div>
-    </div>
-    <div class ="row">
-        <div class="col s12">
-            <audio controls=""></audio>
-        </div>
-    </div>
-
-</div>
 <script>
 
     $( document ).ready(function() {
   // Handler for .ready() called.
+        //let draw the audio
+        var canvas = document.querySelector('#meter');
+        var ctx = canvas.getContext('2d');
+        var w = canvas.width;
+        var h = canvas.height;
+
+        //fill the canvas first
+        ctx.fillStyle = '#555';
+        ctx.fillRect(0,0,w,h);
+
         window.AudioContext = window.AudioContext || window.webkitAudioContext;
         context = new window.AudioContext();
-        analyser = context.createAnalyser();
+        //testing scriptprocessor instead of analyser
+        //analyser = context.createAnalyser();
+        analyser = context.createScriptProcessor(1024,1,1);
         compressor = context.createDynamicsCompressor();
         biquadFilter = context.createBiquadFilter();
         source=null;
@@ -133,30 +159,70 @@
                 dest = context.createMediaStreamDestination()
                 mediaRecorder = new MediaRecorder(dest.stream);
                 /*create a compressor node*/
-                compressor.threshold.value = -50;
-                compressor.knee.value = 40;
-                compressor.ratio.value = 12;
-                compressor.attack.value = 0;
-                compressor.release.value = 0.25;
+                compressor.threshold.value =$("#compressorThreshold")[0].value;
+                compressor.knee.value = $("#compressorKnee")[0].value;
+                compressor.ratio.value = $("#compressorRatio")[0].value;
+                compressor.attack.value = $("#compressorAttack")[0].value;
+                compressor.release.value = $("#compressorRelease")[0].value;
                 biquadFilter.type = "lowshelf";
-                biquadFilter.frequency.value = 1000;
-                biquadFilter.gain.value = 25;
-
-
-                source.connect(analyser);
+                biquadFilter.frequency.value = $("#biquadFrequency")[0].value;
+                biquadFilter.gain.value = $("#biquadGain")[0].value;;
 
                 mediaRecorder.ondataavailable = function(evt) {
                    // push each chunk (blobs) in an array
                    chunks.push(evt.data);
+                   /*var bufferLength = analyser.frequencyBinCount;
+                   var dataArray = new Uint8Array(bufferLength);
+                   analyser.getByteTimeDomainData(dataArray);
+                   console.log(dataArray);*/
                  };
                 source.onended = function(){
                     var blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' });
                     document.querySelector("audio").src = URL.createObjectURL(blob);
                 }
-
+                
+                //program our analyser
+                analyser.onaudioprocess = function(e){
+                    var out = e.outputBuffer.getChannelData(0);
+                    var int = e.inputBuffer.getChannelData(0);
+                    var max = 0;
+                    
+                    for(var i = 0; i < int.length; i++){
+                        out[i] = 0;//prevent feedback and we only need the input data
+                        max = int[i] > max ? int[i] : max;
+                    }
+                    //convert from magitude to decibel
+                    
+                    var db = 20*Math.log10(Math.max(max,Math.pow(10,-72/20)));
+                    //db = -20;
+                    console.log(db);
+                    //It's time to draw on the canvas
+                    //create the gradient
+                    var grad = ctx.createLinearGradient(w/10,h*0.2,w/10,h*0.95);
+                    grad.addColorStop(0,'red');
+                    grad.addColorStop(-6/-72,'yellow');
+                    grad.addColorStop(1,'green');
+                    //fill the background
+                    ctx.fillStyle = '#555';
+                    ctx.fillRect(0,0,w,h);
+                    ctx.fillStyle = grad;
+                    //draw the rectangle
+                    ctx.fillRect(w/10,h*0.8*(db/-72),w*8/10,(h*0.95)-h*0.8*(db/-72));
+                    //draw the text out
+                    ctx.fillStyle="white";
+                    ctx.font = "Arial 12pt";
+                    ctx.textAlign = "center";
+                    ctx.fillText(Math.round(db*100)/100+' dB',w/2,h-h*0.025);
+                };
+                //$("#compressor")[0].getAttribute('data-active')=="true"
+                //$("#biquad")[0].getAttribute('data-active')=="true"
+                //source.connect(analyser);
+                
                 source.connect(compressor);
-                compressor.connect(biquadFilter)
+                compressor.connect(biquadFilter);                
                 biquadFilter.connect(dest);
+                biquadFilter.connect(analyser);
+                analyser.connect(context.destination);
                 biquadFilter.connect(context.destination);
                 source.buffer = buf;
                 mediaRecorder.start();
